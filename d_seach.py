@@ -6,22 +6,24 @@ import numpy as np
 # ----- Simulation Parameters -----
 TRAVEL_TIME_PER_UNIT = 1    # time per distance unit
 DROP_TIME = 2               # time to drop a rack
-DWELL_TIME = 6             # dwell (wait) time in the bath
+BATH5_DWELL_TIME = 10         # change this for Bath5
+BATH10_DWELL_TIME = 8        # change this for Bath10
+BATH15_DWELL_TIME = 4       # change this for Bath15
 DRIP_TIME = 3              # time to wait for dripping after picking up
 
 # Positions (units)
 ENTRY = 0
-BATH5 = 5
-BATH10 = 10
-BATH15 = 15  # Final bath
+BATH5 = 2
+BATH10 = 6
+BATH15 = 14  # Final bath
 EXIT = 17    # Exit position for stacking
 
 # Manipulator home positions.
 HOME_M1 = 0
-HOME_M2 = 6
-HOME_M3 = 11
+HOME_M2 = 3
+HOME_M3 = 7
 
-NUM_RACKS = 3
+NUM_RACKS = 6
 finished_racks = []
 
 # ----- Global State for Animation -----
@@ -178,7 +180,7 @@ def manipulator1(env, entry_store, bath5_store, bath5_resource):
                 bath_occupied['bath5'] = True
                 
                 # Start a separate process for dwelling and store transfer
-                env.process(dwell_and_store(env, rack, 'bath5', bath5_store, DWELL_TIME))
+                env.process(dwell_and_store(env, rack, 'bath5', bath5_store, BATH5_DWELL_TIME))
                 
             # Return to ENTRY immediately after dropping
             yield from move_manipulator(env, 1, BATH5, HOME_M1)
@@ -243,7 +245,7 @@ def manipulator2(env, bath5_store, bath10_store, bath10_resource):
                 dwell_times['bath10'][rack] = env.now
                 bath_occupied['bath10'] = True
                 
-                env.process(dwell_and_store(env, rack, 'bath10', bath10_store, DWELL_TIME))
+                env.process(dwell_and_store(env, rack, 'bath10', bath10_store, BATH10_DWELL_TIME))
                 
             yield from move_manipulator(env, 2, BATH10, HOME_M2)
             print(f"Time {env.now}: M2 returned to home")
@@ -306,7 +308,7 @@ def manipulator3(env, bath10_store):
             bath_occupied['bath15'] = True
             
             # Wait for dwelling to complete
-            yield env.process(dwell_and_wait(env, rack, 'bath15', DWELL_TIME))
+            yield env.process(dwell_and_wait(env, rack, 'bath15', BATH15_DWELL_TIME))
             
             # Pick up from Bath15 directly (no return to home)
             print(f"Time {env.now}: M3 picked up Rack {rack} from Bath15")
